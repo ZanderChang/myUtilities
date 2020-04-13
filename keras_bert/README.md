@@ -1,0 +1,2 @@
+- [当Bert遇上Keras：这可能是Bert最简单的打开姿势](https://kexue.fm/archives/6736)
+- [推荐评论展示（基于预训练Bert的文本分类）](https://blog.csdn.net/G_B_L/article/details/104619341)
