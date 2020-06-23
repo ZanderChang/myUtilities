@@ -126,13 +126,15 @@ class Driller(object):
         # 创建SIM控制state的符号执行，包括多个stash
         simgr = p.factory.simulation_manager(s, save_unsat=True, hierarchy=False, save_unconstrained=r.crash_mode) # r.crash_mode 是否产生崩溃
 
-        t = angr.exploration_techniques.Tracer(trace=r.trace, crash_addr=r.crash_addr, copy_states=True) # r.trace 基本块执行顺序（地址）
+        # 从sat_succs中找到正确后继（与trace中下一基本块的地址做比较），其余的sat_succs放入到missed stash中
+        t = angr.exploration_techniques.Tracer(trace=r.trace, crash_addr=r.crash_addr, copy_states=True) # r.trace 基本块执行顺序（地址） copy_states(LAZY_SOLVES)看到missed state
         self._core = angr.exploration_techniques.DrillerCore(trace=r.trace)
 
         # 设定explore策略
+        # _hook_list = ('step', 'filter', 'selector', 'step_state', 'successors')
         simgr.use_technique(t) # 使执行沿着该trace进行，结果放在traced stash中
         simgr.use_technique(angr.exploration_techniques.Oppologist()) # 处理angr不支持模拟的指令，使用具体的输入并用Unicore进行模拟（混合执行）
-        simgr.use_technique(self._core) # 根据input寻找新的转移状态，结果放在diverted stash中
+        simgr.use_technique(self._core) # 根据input从missed stash寻找新的转移状态，结果放在diverted stash中
 
         # 为state的unicorn添加物理限制
         self._set_concretizations(simgr.one_active) # one_active = active[0]
@@ -156,7 +158,7 @@ class Driller(object):
                 w = self._writeout(state.history.bbl_addrs[-1], state)
                 if w is not None:
                     yield w
-                for i in self._symbolic_explorer_stub(state):
+                for i in self._symbolic_explorer_stub(state): # 从该state开始探索执行
                     yield i
 
 ### EXPLORER
@@ -170,14 +172,14 @@ class Driller(object):
         p = state.project
         state = state.copy()
         try:
-            state.options.remove(angr.options.LAZY_SOLVES)
+            state.options.remove(angr.options.LAZY_SOLVES) # Don't check satisfiability until absolutely necessary
         except KeyError:
             pass
-        simgr = p.factory.simulation_manager(state, hierarchy=False)
+        simgr = p.factory.simulation_manager(state, hierarchy=False) # 从该state开始
 
         l.debug("[%s] started symbolic exploration at %s.", self.identifier, time.ctime())
 
-        while len(simgr.active) and accumulated < 1024:
+        while len(simgr.active) and accumulated < 1024: # 避免路径爆炸？
             simgr.step()
             steps += 1
 
