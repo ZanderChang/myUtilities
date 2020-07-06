@@ -16,9 +16,12 @@ using namespace llvm;
 Function *SanCovTraceCmpFunction[4];
 Function *SanCovTraceConstCmpFunction[4];
 
+Function *SanCovTraceSwitchFunction;
+
 SanitizerCoverageOptions Options;
 const DataLayout *DL;
 LLVMContext *C;
+Module *CurModule;
 
 char * SanCovTraceCmp1 = "__sanitizer_cov_trace_cmp1";
 char * SanCovTraceCmp2 = "__sanitizer_cov_trace_cmp2";
@@ -28,6 +31,14 @@ char * SanCovTraceConstCmp1 = "__sanitizer_cov_trace_const_cmp1";
 char * SanCovTraceConstCmp2 = "__sanitizer_cov_trace_const_cmp2";
 char * SanCovTraceConstCmp4 = "__sanitizer_cov_trace_const_cmp4";
 char * SanCovTraceConstCmp8 = "__sanitizer_cov_trace_const_cmp8";
+char * SanCovTraceSwitchName = "__sanitizer_cov_trace_switch";
+
+// Data Type
+Type *VoidTy;
+Type *Int64Ty, *Int64PtrTy;
+Type *Int32Ty;
+Type *Int16Ty;
+Type *Int8Ty;
 
 namespace
 {
@@ -43,7 +54,7 @@ namespace
 
 char CollectCMPPass::ID = 0;
 
-void InjectTraceForCmp(Function &, ArrayRef<Instruction *> CmpTraceTargets)
+void InjectTraceForCmp(ArrayRef<Instruction *> CmpTraceTargets)
 {
     for (auto I : CmpTraceTargets)
     {
@@ -78,6 +89,46 @@ void InjectTraceForCmp(Function &, ArrayRef<Instruction *> CmpTraceTargets)
     }
 }
 
+void InjectTraceForSwitch(Function &, ArrayRef<Instruction *> SwitchTraceTargets) 
+{
+    for (auto I : SwitchTraceTargets) 
+    {
+        if (SwitchInst *SI = dyn_cast<SwitchInst>(I)) 
+        {
+            IRBuilder<> IRB(I);
+            SmallVector<Constant *, 16> Initializers;
+            Value *Cond = SI->getCondition();
+            if (Cond->getType()->getScalarSizeInBits() > Int64Ty->getScalarSizeInBits()) continue;
+            Initializers.push_back(ConstantInt::get(Int64Ty, SI->getNumCases()));
+            Initializers.push_back(ConstantInt::get(Int64Ty, Cond->getType()->getScalarSizeInBits()));
+            if (Cond->getType()->getScalarSizeInBits() < Int64Ty->getScalarSizeInBits())
+            {
+                Cond = IRB.CreateIntCast(Cond, Int64Ty, false);
+            }
+                
+            for (auto It : SI->cases()) 
+            {
+                Constant *C = It.getCaseValue();
+                if (C->getType()->getScalarSizeInBits() < Int64Ty->getScalarSizeInBits())
+                {
+                    C = ConstantExpr::getCast(CastInst::ZExt, It.getCaseValue(), Int64Ty);
+                }
+                Initializers.push_back(C);
+            }
+            std::sort(Initializers.begin() + 2, Initializers.end(),
+                        [](const Constant *A, const Constant *B) { return cast<ConstantInt>(A)->getLimitedValue() < cast<ConstantInt>(B)->getLimitedValue(); } );
+
+            ArrayType *ArrayOfInt64Ty = ArrayType::get(Int64Ty, Initializers.size());
+            GlobalVariable *GV = new GlobalVariable(
+                *CurModule, ArrayOfInt64Ty, false, GlobalVariable::InternalLinkage,
+                ConstantArray::get(ArrayOfInt64Ty, Initializers),
+                "__sancov_gen_cov_switch_values");
+
+            IRB.CreateCall(SanCovTraceSwitchFunction, {Cond, IRB.CreatePointerCast(GV, Int64PtrTy)});
+        }
+    }
+}
+
 bool CollectCMPPass::runOnFunction(Function &F)
 {
     if (F.empty() || F.getName().contains("__sanitizer_") || F.getLinkage() == GlobalValue::AvailableExternallyLinkage)
@@ -86,21 +137,20 @@ bool CollectCMPPass::runOnFunction(Function &F)
     }
 
     SmallVector<Instruction *, 8> CmpTraceTargets;
+    SmallVector<Instruction *, 8> SwitchTraceTargets;
 
     for (auto &BB : F)
     {
-        for (auto &BB : F) 
+        outs() << "[BB] " << BB.getName() << "\n";
+        for (auto &Inst : BB) 
         {
-            for (auto &Inst : BB) 
-            {
-                if (isa<ICmpInst>(&Inst)) CmpTraceTargets.push_back(&Inst);
-                // if (isa<SwitchInst>(&Inst))
-                // SwitchTraceTargets.push_back(&Inst);
-            }
+            if (isa<ICmpInst>(&Inst)) CmpTraceTargets.push_back(&Inst);
+            if (isa<SwitchInst>(&Inst)) SwitchTraceTargets.push_back(&Inst);
         }
     }
 
-    InjectTraceForCmp(F, CmpTraceTargets);
+    InjectTraceForCmp(CmpTraceTargets);
+    InjectTraceForSwitch(F, SwitchTraceTargets);
 
     return true;
 }
@@ -120,6 +170,7 @@ llvm::StringRef getRealFunctionName(Module &M, char* name)
 
 bool CollectCMPPass::runOnModule(Module &M)
 {
+    CurModule = &M;
     C = &(M.getContext());
     DL = &M.getDataLayout();
     Triple TargetTriple = Triple(M.getTargetTriple());
@@ -134,11 +185,12 @@ bool CollectCMPPass::runOnModule(Module &M)
 
     // 
     IRBuilder<> IRB(*C);
-    Type *VoidTy = Type::getVoidTy(*C);
-    Type *Int64Ty = IRB.getInt64Ty();
-    Type *Int32Ty = IRB.getInt32Ty();
-    Type *Int16Ty = IRB.getInt16Ty();
-    Type *Int8Ty = IRB.getInt8Ty();
+    VoidTy = Type::getVoidTy(*C);
+    Int64Ty = IRB.getInt64Ty();
+    Int64PtrTy = PointerType::getUnqual(IRB.getInt64Ty());
+    Int32Ty = IRB.getInt32Ty();
+    Int16Ty = IRB.getInt16Ty();
+    Int8Ty = IRB.getInt8Ty();
 
     SanCovTraceCmpFunction[0] = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceCmp1), VoidTy, Int8Ty, Int8Ty));
     SanCovTraceCmpFunction[1] = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceCmp2), VoidTy, Int16Ty, Int16Ty));
@@ -149,6 +201,8 @@ bool CollectCMPPass::runOnModule(Module &M)
     SanCovTraceConstCmpFunction[1] = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceConstCmp2), VoidTy, Int16Ty, Int16Ty));
     SanCovTraceConstCmpFunction[2] = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceConstCmp4), VoidTy, Int32Ty, Int32Ty));
     SanCovTraceConstCmpFunction[3] = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceConstCmp8), VoidTy, Int64Ty, Int64Ty));
+
+    SanCovTraceSwitchFunction = checkSanitizerInterfaceFunction(M.getOrInsertFunction(getRealFunctionName(M, SanCovTraceSwitchName), VoidTy, Int64Ty, Int64PtrTy));
 
     // Make sure smaller parameters are zero-extended to i64 as required by the x86_64 ABI.
     if (TargetTriple.getArch() == Triple::x86_64) 
@@ -164,7 +218,7 @@ bool CollectCMPPass::runOnModule(Module &M)
 
     for (auto &F : M)
     {
-        outs() << F.getName() << "\n";
+        outs() << "[F] " << F.getName() << "\n";
         runOnFunction(F);
     }
 
