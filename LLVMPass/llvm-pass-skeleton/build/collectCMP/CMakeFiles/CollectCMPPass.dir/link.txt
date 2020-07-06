@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC   -shared  -o libCollectCMPPass.so CMakeFiles/CollectCMPPass.dir/CollectCMP.cpp.o  -L/home/zhangzheng1/zhangzheng1/tools/llvm-6.0/usr/local/lib 

@@ -1,0 +1,15 @@
+digraph "CFG for 'a' function" {
+	label="CFG for 'a' function";
+
+	Node0x514a490 [shape=record,label="{entry:\l  %0 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %1 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %2 = xor i32 %0, 45017\l  %3 = getelementptr i8, i8* %1, i32 %2\l  %4 = load i8, i8* %3, !nosanitize !2\l  %5 = add i8 %4, 1\l  store i8 %5, i8* %3, !nosanitize !2\l  store i32 22508, i32* @__afl_prev_loc, !nosanitize !2\l  %aa = alloca i32, align 4\l  %bb = alloca i32, align 4\l  store i32 12, i32* %aa, align 4\l  %6 = load i32, i32* %aa, align 4\l  %cmp = icmp sgt i32 %6, 13\l  br i1 %cmp, label %if.then, label %if.end\l|{<s0>T|<s1>F}}"];
+	Node0x514a490:s0 -> Node0x514caa0;
+	Node0x514a490:s1 -> Node0x514cb70;
+	Node0x514caa0 [shape=record,label="{if.then:                                          \l  %7 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %8 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %9 = xor i32 %7, 23358\l  %10 = getelementptr i8, i8* %8, i32 %9\l  %11 = load i8, i8* %10, !nosanitize !2\l  %12 = add i8 %11, 1\l  store i8 %12, i8* %10, !nosanitize !2\l  store i32 11679, i32* @__afl_prev_loc, !nosanitize !2\l  %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3\l... x i8]* @.str, i32 0, i32 0))\l  br label %if.end\l}"];
+	Node0x514caa0 -> Node0x514cb70;
+	Node0x514cb70 [shape=record,label="{if.end:                                           \l  %13 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %14 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %15 = xor i32 %13, 60354\l  %16 = getelementptr i8, i8* %14, i32 %15\l  %17 = load i8, i8* %16, !nosanitize !2\l  %18 = add i8 %17, 1\l  store i8 %18, i8* %16, !nosanitize !2\l  store i32 30177, i32* @__afl_prev_loc, !nosanitize !2\l  store i32 14, i32* %aa, align 4\l  store i32 90, i32* %bb, align 4\l  %19 = load i32, i32* %bb, align 4\l  %20 = load i32, i32* %aa, align 4\l  %cmp1 = icmp sgt i32 %19, %20\l  br i1 %cmp1, label %if.then2, label %if.end4\l|{<s0>T|<s1>F}}"];
+	Node0x514cb70:s0 -> Node0x514dc90;
+	Node0x514cb70:s1 -> Node0x514dd70;
+	Node0x514dc90 [shape=record,label="{if.then2:                                         \l  %21 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %22 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %23 = xor i32 %21, 19051\l  %24 = getelementptr i8, i8* %22, i32 %23\l  %25 = load i8, i8* %24, !nosanitize !2\l  %26 = add i8 %25, 1\l  store i8 %26, i8* %24, !nosanitize !2\l  store i32 9525, i32* @__afl_prev_loc, !nosanitize !2\l  %call3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8],\l... [3 x i8]* @.str.1, i32 0, i32 0))\l  br label %if.end4\l}"];
+	Node0x514dc90 -> Node0x514dd70;
+	Node0x514dd70 [shape=record,label="{if.end4:                                          \l  %27 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %28 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %29 = xor i32 %27, 49131\l  %30 = getelementptr i8, i8* %28, i32 %29\l  %31 = load i8, i8* %30, !nosanitize !2\l  %32 = add i8 %31, 1\l  store i8 %32, i8* %30, !nosanitize !2\l  store i32 24565, i32* @__afl_prev_loc, !nosanitize !2\l  ret void\l}"];
+}

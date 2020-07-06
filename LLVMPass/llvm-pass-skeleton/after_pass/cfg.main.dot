@@ -1,0 +1,10 @@
+digraph "CFG for 'main' function" {
+	label="CFG for 'main' function";
+
+	Node0x514e820 [shape=record,label="{entry:\l  %0 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %1 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %2 = xor i32 %0, 25404\l  %3 = getelementptr i8, i8* %1, i32 %2\l  %4 = load i8, i8* %3, !nosanitize !2\l  %5 = add i8 %4, 1\l  store i8 %5, i8* %3, !nosanitize !2\l  store i32 12702, i32* @__afl_prev_loc, !nosanitize !2\l  %retval = alloca i32, align 4\l  %m = alloca i32, align 4\l  store i32 0, i32* %retval, align 4\l  store i32 0, i32* %m, align 4\l  %6 = load i32, i32* %m, align 4\l  %cmp = icmp sgt i32 %6, -1\l  br i1 %cmp, label %if.then, label %if.end\l|{<s0>T|<s1>F}}"];
+	Node0x514e820:s0 -> Node0x514f110;
+	Node0x514e820:s1 -> Node0x514f1e0;
+	Node0x514f110 [shape=record,label="{if.then:                                          \l  %7 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %8 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %9 = xor i32 %7, 28426\l  %10 = getelementptr i8, i8* %8, i32 %9\l  %11 = load i8, i8* %10, !nosanitize !2\l  %12 = add i8 %11, 1\l  store i8 %12, i8* %10, !nosanitize !2\l  store i32 14213, i32* @__afl_prev_loc, !nosanitize !2\l  call void @a()\l  br label %if.end\l}"];
+	Node0x514f110 -> Node0x514f1e0;
+	Node0x514f1e0 [shape=record,label="{if.end:                                           \l  %13 = load i32, i32* @__afl_prev_loc, !nosanitize !2\l  %14 = load i8*, i8** @__afl_area_ptr, !nosanitize !2\l  %15 = xor i32 %13, 33484\l  %16 = getelementptr i8, i8* %14, i32 %15\l  %17 = load i8, i8* %16, !nosanitize !2\l  %18 = add i8 %17, 1\l  store i8 %18, i8* %16, !nosanitize !2\l  store i32 16742, i32* @__afl_prev_loc, !nosanitize !2\l  %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4\l... x i8]* @.str.2, i32 0, i32 0))\l  ret i32 0\l}"];
+}
