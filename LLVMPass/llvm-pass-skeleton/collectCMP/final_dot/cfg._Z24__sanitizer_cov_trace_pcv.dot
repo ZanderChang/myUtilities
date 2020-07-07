@@ -1,0 +1,5 @@
+digraph "CFG for '_Z24__sanitizer_cov_trace_pcv' function" {
+	label="CFG for '_Z24__sanitizer_cov_trace_pcv' function";
+
+	Node0x5a295f0 [shape=record,label="{entry:\l  %PC = alloca i64, align 8\l  %0 = call i8* @llvm.returnaddress(i32 0)\l  %1 = ptrtoint i8* %0 to i64\l  store i64 %1, i64* %PC, align 8\l  %2 = load i64, i64* %PC, align 8\l  %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([11 x i8],\l... [11 x i8]* @.str, i32 0, i32 0), i64 %2)\l  ret void\l}"];
+}

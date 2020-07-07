@@ -13,9 +13,9 @@ using namespace llvm;
 template <class T>
 ATTRIBUTE_TARGET_POPCNT ALWAYS_INLINE
 	ATTRIBUTE_NO_SANITIZE_ALL void
-	HandleCmp(char* type, uintptr_t PC, T Arg1, T Arg2)
+	HandleCmp(char *type, uintptr_t PC, T Arg1, T Arg2)
 {
-	printf("[%s] [0x%x] 0x%x 0x%x\n", type, PC, Arg1, Arg2);
+	fprintf(stderr, "[%s] [0x%x] 0x%x 0x%x\n", type, PC, Arg1, Arg2);
 	// outs() << Arg1 << " " << Arg2 << "\n";
 	// uint64_t ArgXor = Arg1 ^ Arg2;
 	// if (sizeof(T) == 4)
@@ -26,10 +26,29 @@ ATTRIBUTE_TARGET_POPCNT ALWAYS_INLINE
 
 ATTRIBUTE_INTERFACE
 ATTRIBUTE_NO_SANITIZE_ALL
+void __sanitizer_cov_trace_pc()
+{
+	uintptr_t PC = reinterpret_cast<uintptr_t>(__builtin_return_address(0));
+	fprintf(stderr, "[PC] 0x%x\n", PC);
+	// uintptr_t Idx = PC & (((uintptr_t)1 << fuzzer::TracePC::kTracePcBits) - 1);
+	// __sancov_trace_pc_pcs[Idx] = PC;
+	// __sancov_trace_pc_guard_8bit_counters[Idx]++;
+}
+
+ATTRIBUTE_INTERFACE
+ATTRIBUTE_NO_SANITIZE_ALL
+ATTRIBUTE_TARGET_POPCNT
+void __sanitizer_cov_trace_strcmp(uint64_t *Arg1, uint64_t *Arg2)
+{
+	fprintf(stderr, "[STRCMP] %s %s\n", Arg1, Arg2);
+}
+
+ATTRIBUTE_INTERFACE
+ATTRIBUTE_NO_SANITIZE_ALL
 ATTRIBUTE_TARGET_POPCNT
 void __sanitizer_cov_trace_cmp8(uint64_t Arg1, uint64_t Arg2)
 {
-	uintptr_t PC = reinterpret_cast<uintptr_t>(__builtin_return_address(0));
+	uintptr_t PC = reinterpret_cast<uintptr_t>(__builtin_return_address(0)); // the return address of the current function
 	HandleCmp("CMP", PC, Arg1, Arg2);
 }
 
@@ -117,9 +136,12 @@ void __sanitizer_cov_trace_switch(uint64_t Val, uint64_t *Cases)
 	{
 		// Token = Val ^ Vals[i];
 		// if (Val < Vals[i]) break;
-		if (ValSizeInBits == 16) HandleCmp("SWITCH-16", PC + i, static_cast<uint16_t>(Vals[i]), (uint16_t)(0));
-		else if (ValSizeInBits == 32) HandleCmp("SWITCH-32", PC + i, static_cast<uint32_t>(Vals[i]), (uint32_t)(0));
-		else HandleCmp("SWITCH-64", PC + i, Vals[i], (uint64_t)(0));
+		if (ValSizeInBits == 16)
+			HandleCmp("SWITCH-16", PC + i, static_cast<uint16_t>(Vals[i]), (uint16_t)(0));
+		else if (ValSizeInBits == 32)
+			HandleCmp("SWITCH-32", PC + i, static_cast<uint32_t>(Vals[i]), (uint32_t)(0));
+		else
+			HandleCmp("SWITCH-64", PC + i, Vals[i], (uint64_t)(0));
 	}
 
 	// if (ValSizeInBits == 16) HandleCmp(PC + i, static_cast<uint16_t>(Token), (uint16_t)(0));

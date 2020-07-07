@@ -1,0 +1,5 @@
+digraph "CFG for '_Z28__sanitizer_cov_trace_strcmpPmS_' function" {
+	label="CFG for '_Z28__sanitizer_cov_trace_strcmpPmS_' function";
+
+	Node0x5a2a530 [shape=record,label="{entry:\l  %Arg1.addr = alloca i64*, align 8\l  %Arg2.addr = alloca i64*, align 8\l  store i64* %Arg1, i64** %Arg1.addr, align 8\l  store i64* %Arg2, i64** %Arg2.addr, align 8\l  %0 = load i64*, i64** %Arg1.addr, align 8\l  %1 = load i64*, i64** %Arg2.addr, align 8\l  %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([16 x i8],\l... [16 x i8]* @.str.1, i32 0, i32 0), i64* %0, i64* %1)\l  ret void\l}"];
+}

@@ -1,0 +1,32 @@
+digraph "CFG for 'a' function" {
+	label="CFG for 'a' function";
+
+	Node0x5a596a0 [shape=record,label="{entry:\l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %aa = alloca i32, align 4\l  %bb = alloca i32, align 4\l  %num = alloca i32, align 4\l  store i32 12, i32* %aa, align 4\l  %0 = load i32, i32* %aa, align 4\l  call void @_Z32__sanitizer_cov_trace_const_cmp4jj(i32 13, i32 %0)\l  %cmp = icmp sgt i32 %0, 13\l  br i1 %cmp, label %if.then, label %if.else\l|{<s0>T|<s1>F}}"];
+	Node0x5a596a0:s0 -> Node0x5a55790;
+	Node0x5a596a0:s1 -> Node0x5a55840;
+	Node0x5a55790 [shape=record,label="{if.then:                                          \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3\l... x i8]* @.str.7, i32 0, i32 0))\l  br label %if.end\l}"];
+	Node0x5a55790 -> Node0x5a55c90;
+	Node0x5a55840 [shape=record,label="{if.else:                                          \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %call1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8],\l... [4 x i8]* @.str.1.8, i32 0, i32 0))\l  br label %if.end\l}"];
+	Node0x5a55840 -> Node0x5a55c90;
+	Node0x5a55c90 [shape=record,label="{if.end:                                           \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  store i32 14, i32* %aa, align 4\l  store i32 90, i32* %bb, align 4\l  %1 = load i32, i32* %bb, align 4\l  %2 = load i32, i32* %aa, align 4\l  call void @_Z26__sanitizer_cov_trace_cmp4jj(i32 %1, i32 %2)\l  %cmp2 = icmp sgt i32 %1, %2\l  br i1 %cmp2, label %if.then3, label %if.else5\l|{<s0>T|<s1>F}}"];
+	Node0x5a55c90:s0 -> Node0x5a5f080;
+	Node0x5a55c90:s1 -> Node0x5a5f130;
+	Node0x5a5f080 [shape=record,label="{if.then3:                                         \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %call4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8],\l... [3 x i8]* @.str.2.9, i32 0, i32 0))\l  br label %if.end7\l}"];
+	Node0x5a5f080 -> Node0x5a5f660;
+	Node0x5a5f130 [shape=record,label="{if.else5:                                         \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %call6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8],\l... [4 x i8]* @.str.3.10, i32 0, i32 0))\l  br label %if.end7\l}"];
+	Node0x5a5f130 -> Node0x5a5f660;
+	Node0x5a5f660 [shape=record,label="{if.end7:                                          \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  store i32 2, i32* %num, align 4\l  %3 = load i32, i32* %num, align 4\l  %add = add nsw i32 %3, 2\l  %4 = zext i32 %add to i64\l  call void @_Z28__sanitizer_cov_trace_switchmPm(i64 %4, i64* getelementptr\l... inbounds ([5 x i64], [5 x i64]* @__sancov_gen_cov_switch_values, i32 0, i32\l... 0))\l  switch i32 %add, label %sw.default [\l    i32 1, label %sw.bb\l    i32 2, label %sw.bb9\l    i32 3, label %sw.bb11\l  ]\l|{<s0>def|<s1>1|<s2>2|<s3>3}}"];
+	Node0x5a5f660:s0 -> Node0x5a5ff40;
+	Node0x5a5f660:s1 -> Node0x5a5fff0;
+	Node0x5a5f660:s2 -> Node0x5a600a0;
+	Node0x5a5f660:s3 -> Node0x5a60150;
+	Node0x5a5fff0 [shape=record,label="{sw.bb:                                            \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %5 = load i32, i32* %num, align 4\l  %call8 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([21 x i8],\l... [21 x i8]* @.str.4.11, i32 0, i32 0), i32 %5)\l  br label %sw.bb9\l}"];
+	Node0x5a5fff0 -> Node0x5a600a0;
+	Node0x5a600a0 [shape=record,label="{sw.bb9:                                           \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %6 = load i32, i32* %num, align 4\l  %call10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([21 x i8],\l... [21 x i8]* @.str.5.12, i32 0, i32 0), i32 %6)\l  br label %sw.bb11\l}"];
+	Node0x5a600a0 -> Node0x5a60150;
+	Node0x5a60150 [shape=record,label="{sw.bb11:                                          \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %7 = load i32, i32* %num, align 4\l  %call12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([21 x i8],\l... [21 x i8]* @.str.6.13, i32 0, i32 0), i32 %7)\l  br label %sw.default\l}"];
+	Node0x5a60150 -> Node0x5a5ff40;
+	Node0x5a5ff40 [shape=record,label="{sw.default:                                       \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  %8 = load i32, i32* %num, align 4\l  %call13 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([23 x i8],\l... [23 x i8]* @.str.7.14, i32 0, i32 0), i32 %8)\l  br label %sw.epilog\l}"];
+	Node0x5a5ff40 -> Node0x5a5f1b0;
+	Node0x5a5f1b0 [shape=record,label="{sw.epilog:                                        \l  call void @_Z24__sanitizer_cov_trace_pcv()\l  call void asm sideeffect \"\", \"\"()\l  ret void\l}"];
+}
