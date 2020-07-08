@@ -247,7 +247,10 @@ llvm::StringRef getRealFunctionName(Module &M, char *name)
             return F.getName();
         }
     }
-    return "";
+
+    StringRef * res = new StringRef(name);
+
+    return *res;
 }
 
 bool CollectCMPPass::runOnModule(Module &M)
