@@ -1,0 +1,5 @@
+digraph "CFG for 'a' function" {
+	label="CFG for 'a' function";
+
+	Node0x52b0230 [shape=record,label="{entry:\l  call void @__sanitizer_cov_trace_pc(i64* bitcast ([8 x i8]* @0 to i64*)),\l... !dbg !25\l  call void asm sideeffect \"\", \"\"(), !dbg !25\l  call void @llvm.dbg.value(metadata i32 12, metadata !21, metadata\l... !DIExpression()), !dbg !25\l  %puts = tail call i32 @puts(i8* getelementptr inbounds ([3 x i8], [3 x i8]*\l... @str, i64 0, i64 0)), !dbg !26\l  call void @llvm.dbg.value(metadata i32 14, metadata !21, metadata\l... !DIExpression()), !dbg !25\l  call void @llvm.dbg.value(metadata i32 90, metadata !23, metadata\l... !DIExpression()), !dbg !29\l  %puts22 = tail call i32 @puts(i8* getelementptr inbounds ([2 x i8], [2 x\l... i8]* @str.10, i64 0, i64 0)), !dbg !30\l  call void @llvm.dbg.value(metadata i32 2, metadata !24, metadata\l... !DIExpression()), !dbg !33\l  %call13 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([23 x\l... i8], [23 x i8]* @.str.7, i64 0, i64 0), i32 2), !dbg !34\l  ret void, !dbg !36\l}"];
+}
