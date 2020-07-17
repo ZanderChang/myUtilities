@@ -1,22 +1,53 @@
-[F] a
+[F] a 4
 [BB] entry
+[I] 6|9|  call void @llvm.dbg.value(metadata i32 12, metadata !21, metadata !DIExpression()), !dbg !25
+[I] 13|9|  %puts = tail call i32 @puts(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @str, i64 0, i64 0)), !dbg !26
 [BBC] puts
+[I] 6|9|  call void @llvm.dbg.value(metadata i32 14, metadata !21, metadata !DIExpression()), !dbg !25
+[I] 17|9|  call void @llvm.dbg.value(metadata i32 90, metadata !23, metadata !DIExpression()), !dbg !29
+[I] 20|9|  %puts22 = tail call i32 @puts(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @str.10, i64 0, i64 0)), !dbg !30
 [BBC] puts
+[I] 28|9|  call void @llvm.dbg.value(metadata i32 2, metadata !24, metadata !DIExpression()), !dbg !33
+[I] 38|9|  %call13 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str.7, i64 0, i64 0), i32 2), !dbg !34
 [BBC] printf
-[F] printf
-[F] main
+[I] 40|1|  ret void, !dbg !36
+[F] printf 0
+[F] main 44
 [BB] entry|if.then4|if.else
+[I] 0|0|  %str = alloca [50 x i8], align 16
+[I] 46|9|  call void @llvm.dbg.value(metadata i32 0, metadata !41, metadata !DIExpression()), !dbg !53
+[I] 6|9|  call void @llvm.dbg.value(metadata i32 12, metadata !21, metadata !DIExpression()) #5, !dbg !54
+[I] 13|9|  %puts.i = tail call i32 @puts(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @str, i64 0, i64 0)) #5, !dbg !46
 [BBC] puts
+[I] 6|9|  call void @llvm.dbg.value(metadata i32 14, metadata !21, metadata !DIExpression()) #5, !dbg !54
+[I] 17|9|  call void @llvm.dbg.value(metadata i32 90, metadata !23, metadata !DIExpression()) #5, !dbg !59
+[I] 20|9|  %puts22.i = tail call i32 @puts(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @str.10, i64 0, i64 0)) #5, !dbg !50
 [BBC] puts
+[I] 28|9|  call void @llvm.dbg.value(metadata i32 2, metadata !24, metadata !DIExpression()) #5, !dbg !61
+[I] 38|9|  %call13.i = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str.7, i64 0, i64 0), i32 2) #5, !dbg !54
 [BBC] printf
+[I] 53|5|  %0 = getelementptr inbounds [50 x i8], [50 x i8]* %str, i64 0, i64 0, !dbg !56
+[I] 53|5|  call void @llvm.lifetime.start.p0i8(i64 50, i8* nonnull %0) #5, !dbg !56
+[I] 53|10|  call void @llvm.dbg.declare(metadata [50 x i8]* %str, metadata !43, metadata !DIExpression()), !dbg !64
+[I] 55|5|  %call = call i32 (i8*, ...) bitcast (i32 (...)* @gets to i32 (i8*, ...)*)(i8* nonnull %0) #5, !dbg !58
 [BBC] gets
+[I] 58|14|  %memcmp = call i32 @memcmp(i8* nonnull %0, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @str1, i64 0, i64 0), i64 5), !dbg !59
 [BBC] memcmp
+[I] 52|9|  call void @llvm.dbg.value(metadata i32 %memcmp, metadata !42, metadata !DIExpression()), !dbg !67
+[I] 59|16|  %cmp3 = icmp eq i32 %memcmp, 0, !dbg !61
+[I] 59|9|  br i1 %cmp3, label %if.then4, label %if.else, !dbg !63
 [BB] if.then4|if.end8
+[I] 61|9|  %puts14 = call i32 @puts(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @str.12, i64 0, i64 0)), !dbg !64
 [BBC] puts
+[I] 62|5|  br label %if.end8, !dbg !66
 [BB] if.else|if.end8
+[I] 65|9|  %puts = call i32 @puts(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @str.11, i64 0, i64 0)), !dbg !67
 [BBC] puts
+[I] 0|0|  br label %if.end8
 [BB] if.end8
+[I] 75|1|  call void @llvm.lifetime.end.p0i8(i64 50, i8* nonnull %0) #5, !dbg !69
+[I] 74|5|  ret i32 0, !dbg !70
 [memcmp] [6162636400]
-[F] gets
-[F] puts
-[F] memcmp
+[F] gets 0
+[F] puts 0
+[F] memcmp 0
