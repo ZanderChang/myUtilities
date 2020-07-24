@@ -217,11 +217,11 @@ pub struct TagSeg {
     pub sign: bool,
     pub begin: u32,
     pub end: u32,
-}
+} 
 
 pub struct LogData {
     pub cond_list: Vec<CondStmtBase>, // 条件语句列表
-    pub tags: HashMap<u32, Vec<TagSeg>>, // clang label -> offsets
+    pub tags: HashMap<u32, Vec<TagSeg>>, // clang label -> offsets (label -> bit vector)
     pub magic_bytes: HashMap<usize, (Vec<u8>, Vec<u8>)>, // variables
 }
 ```
@@ -247,15 +247,35 @@ Angora/bin/lib/libruntime_fast.a
 ## runtime
 Angora/bin/lib/libruntime.a
 
+### Angora/runtime/src/tag_set.rs
+树形结构`TagSet`管理标签（bit vector），300+代码，500+测试，核心操作逻辑
+
+`1`节点的parent指向`ROOT`或其它`1`节点，`0`节点的parent只指向`ROOT`
+
+- find 根据label获取bit vector
+
 ### Angora/runtime/src/logger.rs
 将track信息写入TRACK_OUTPUT_VAR指定的日志文件
 
-### Angora/runtime/src/tag_set_wrap.rs
+- save_tag
+- save
 
+### Angora/runtime/src/tag_set_wrap.rs
+封装对`TagSet`的操作
+
+- pub extern "C" fn __angora_tag_set_insert(offset: u32) -> u32
+  - `offset`指当前bit vector前置0的个数
 - __angora_tag_set_mark_sign
 - __angora_tag_set_infer_shape_in_math_op
 - __angora_tag_set_combine_and
 
+### Angora/runtime/src/track.rs
+导出函数均调用`Logger.save`触发保存label和其对应的操作数到`LogData`
+
+- __dfsw___angora_trace_cmp_tt
+- __dfsw___angora_trace_switch_tt
+- __dfsw___angora_trace_fn_tt
+- __dfsw___angora_trace_exploit_val_tt
 
 
 
