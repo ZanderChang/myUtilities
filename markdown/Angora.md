@@ -42,6 +42,10 @@ clang mini/mini.c -lz -o mini/mini.taint
 
 ## pass
 
+### Angora/llvm_mode/pass/AngoraPass.cc
+
+- AngoraLLVMPass::getInstructionId 为每条Inst分配Cid
+
 ### Angora/llvm_mode/pass/DFSanPass.cc
 
 - DFSanFunction::combineOperandShadows
@@ -139,6 +143,9 @@ Angora/bin/lib/libDFSanIO.a，一些系统函数的`__dfsw_`
 
 Angora/bin/lib/libZlibRt.a
 
+### Angora/llvm_mode/external_lib/io_func.c
+`__dfsw_`包装IO相关函数，调用`dfsan_create_label`为每个byte创建和`dfsan_set_label`设置label，offset为fd当前位置
+
 ## dfsan_rt
 
 ### Angora/llvm_mode/dfsan_rt/dfsan/dfsan.cc
@@ -162,6 +169,12 @@ extern "C" SANITIZER_INTERFACE_ATTRIBUTE void dfsan_combine_and_ins(
     dfsan_label lb) {
   __angora_tag_set_combine_and(lb);
 }
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE dfsan_label
+dfsan_create_label(int pos) {
+  // return __dfsan_tag_set->insert(pos);
+  return __angora_tag_set_insert(pos);
+}
 ```
 
 
@@ -169,9 +182,52 @@ extern "C" SANITIZER_INTERFACE_ATTRIBUTE void dfsan_combine_and_ins(
 
 ## common
 
+### Angora/common/src/cond_stmt_base.rs
 
 ## fuzzer
 Angora/bin/fuzzer
+
+### Angora/fuzzer/src/executor/executor.rs
+
+- run_target
+
+```rust
+let mut cmd = Command::new(&target.0);
+let mut child = cmd
+    .args(&target.1)
+    .stdin(Stdio::null())
+    .env_clear()
+    .envs(&self.envs)
+    .stdout(Stdio::null())
+    .stderr(Stdio::null())
+    .mem_limit(mem_limit.clone()) // ?
+    .setsid() // 创建新Session
+    .pipe_stdin(self.fd.as_raw_fd(), self.cmd.is_stdin) // limit.rs
+    .spawn()
+    .expect("Could not run target");
+```
+
+```sh
+[+] ("./exiv2.fast", ["output1/tmp/cur_input_1"])
+[+] {"ANGORA_TRACK_OUTPUT": "output1/tmp/track_1", "ANGORA_BRANCHES_SHM_ID": "23822346", "ANGORA_COND_STMT_SHM_ID": "23855115", "ASAN_OPTIONS": "abort_on_error=1:detect_leaks=0:symbolize=0:allocator_may_return_null=1", "LD_LIBRARY_PATH": "$LD_LIBRARY_PATH:/data2/zhangzheng1/tools/llvm-7.0.0/clang+llvm/lib", "MSAN_OPTIONS": "exit_code=86:symbolize=0:abort_on_error=1:allocator_may_return_null=1:msan_track_origins=0"}
+
+[+] ("./exiv2.taint", ["output1/tmp/cur_input_1"])
+[+] {"ANGORA_TRACK_OUTPUT": "output1/tmp/track_1", "ANGORA_BRANCHES_SHM_ID": "23822346", "ANGORA_COND_STMT_SHM_ID": "23855115", "ASAN_OPTIONS": "abort_on_error=1:detect_leaks=0:symbolize=0:allocator_may_return_null=1", "LD_LIBRARY_PATH": "$LD_LIBRARY_PATH:/data2/zhangzheng1/tools/llvm-7.0.0/clang+llvm/lib", "MSAN_OPTIONS": "exit_code=86:symbolize=0:abort_on_error=1:allocator_may_return_null=1:msan_track_origins=0"}
+
+ANGORA_TRACK_OUTPUT=track.log ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:symbolize=0:allocator_may_return_null=1 MSAN_OPTIONS=exit_code=86:symbolize=0:abort_on_error=1:allocator_may_return_null=1:msan_track_origins=0 ANGORA_BRANCHES_SHM_ID=23822346, ANGORA_COND_STMT_SHM_ID=23855115 ./bin/exiv2
+```
+
+```rust
+// Angora/runtime_fast/src/shm_conds.rs SHM_CONDS
+// __angora_cond_cmpid
+// AngoraMapPtr
+pub static COND_STMT_ENV_VAR: &str = "ANGORA_COND_STMT_SHM_ID";
+
+// Angora/runtime_fast/src/shm_branches.rs
+// AngoraCondId
+pub static BRANCHES_SHM_ENV_VAR: &str = "ANGORA_BRANCHES_SHM_ID"; // __angora_area_ptr
+```
+
 
 ### Angora/fuzzer/src/track/fparser.rs
 
@@ -203,7 +259,7 @@ pub struct CondStmtBase {
 
     pub condition: u32,
     pub level: u32,
-    pub op: u32,
+    pub op: u32, // arg1和arg2的比较关系
     pub size: u32,
 
     pub lb1: u32, // clang label
@@ -219,6 +275,7 @@ pub struct TagSeg {
     pub end: u32,
 } 
 
+// LogData仅通过tag_set_wrap::tag_set_find对TagSet做查询，得到label对应的bit vector
 pub struct LogData {
     pub cond_list: Vec<CondStmtBase>, // 条件语句列表
     pub tags: HashMap<u32, Vec<TagSeg>>, // clang label -> offsets (label -> bit vector)
@@ -255,7 +312,7 @@ Angora/bin/lib/libruntime.a
 - find 根据label获取bit vector
 
 ### Angora/runtime/src/logger.rs
-将track信息写入TRACK_OUTPUT_VAR指定的日志文件
+将track信息写入环境变量ANGORA_TRACK_OUTPUT=track.log指定的日志文件
 
 - save_tag
 - save
@@ -265,6 +322,7 @@ Angora/bin/lib/libruntime.a
 
 - pub extern "C" fn __angora_tag_set_insert(offset: u32) -> u32
   - `offset`指当前bit vector前置0的个数
+  - 在`Tagset`中新增记录
 - __angora_tag_set_mark_sign
 - __angora_tag_set_infer_shape_in_math_op
 - __angora_tag_set_combine_and
@@ -280,12 +338,14 @@ Angora/bin/lib/libruntime.a
 
 
 ```sh
+# 使用wllvm编译
 LLVM_COMPILER=clang CC=wllvm CXX=wllvm++ CFLAGS=-O0 ./configure --disable-shared
 LLVM_COMPILER=clang make -j15
 extract-bc exiv2
 /data2/zhangzheng1/tools/Angora/bin/angora-clang exiv2.bc -lstdc++ -lz -lexpat -o exiv2.fast
 USE_TRACK=1 /data2/zhangzheng1/tools/Angora/bin/angora-clang exiv2.bc -o exiv2.taint
 
+# 正常流程编译
 mkdir install
 mkdir fuzz
 CC=/data2/zhangzheng1/tools/Angora/bin/angora-clang CXX=/data2/zhangzheng1/tools/Angora/bin/angora-clang++ ./configure --disable-shared --prefix=`realpath ./install`
@@ -293,7 +353,7 @@ make -j15
 cp bin/exiv2 fuzz/exiv2.fast
 make clean
 
-# 直接make定位不需要处理的函数
+## 直接make定位不需要处理的函数 ldd exiv2.fast
 cp /lib/x86_64-linux-gnu/libz.so.1.2.8 fuzz/libz.so # end with .so
 cp /lib/x86_64-linux-gnu/libexpat.so.1.6.0 fuzz/libexpat.so
 
@@ -308,4 +368,22 @@ mkdir input
 cp ~/zhangzheng1/data/Aiptek/* ./input
 
 /data2/zhangzheng1/tools/Angora/bin/fuzzer -i input -o output -t ./exiv2.taint -- ./exiv2.fast @@
+```
+
+完整编译exiv2-0.27.3
+```sh
+cmake -DCMAKE_C_COMPILER=/data2/zhangzheng1/tools/Angora/bin/angora-clang -DCMAKE_CXX_COMPILER=/data2/zhangzheng1/tools/Angora/bin/angora-clang++ -DBUILD_SHARED_LIBS=OFF ..
+# 其余步骤同上
+```
+
+```rust
+// track.rs
+lazy_static! {
+    static ref LC: Mutex<Option<Logger>> = Mutex::new(Some(Logger::new()));
+}
+
+// tag_set_wrap.rs
+lazy_static! {
+    static ref TS: Mutex<Option<TagSet>> = Mutex::new(Some(TagSet::new()));
+}
 ```
